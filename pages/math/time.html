@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Practice</title>
+    <link rel="stylesheet" href="../css/time.css">
+</head>
+<body>
+<div class="container">
+    <h1>Time Practice</h1>
+
+    <div class="info">
+        <h2>Analog Clock Reading Practice</h2>
+        <p>Practice reading times from analog clocks. You will be shown a series of clocks, and you need to input the time shown on each clock.</p>
+        <button id="startReading">Start Reading Practice</button>
+    </div>
+
+    <div class="info">
+        <h2>Analog Clock Setting Practice</h2>
+        <p>Practice setting times on analog clocks. You will be given a series of times to set on the clock face.</p>
+        <button id="startSetting">Start Setting Practice</button>
+    </div>
+
+    <div id="practiceSection" class="hidden">
+        <div id="clockContainer"></div>
+        <div id="inputContainer" class="hidden">
+            <input type="text" id="timeInput" placeholder="Enter time (e.g., 3:45)">
+            <button id="submitAnswer">Submit</button>
+            <a href="../../index.html">Back to Index</a>
+        </div>
+        <div id="resultContainer" class="hidden">
+            <p id="score"></p>
+            <button id="nextQuestion">Next Question</button>
+            <a href="../../index.html">Back to Index</a>
+        </div>
+    </div>
+</div>
+
+<footer>
+    <p>&copy; 2024 Dinesh Kumar S. All rights reserved.</p>
+</footer>
+
+<script src="../scripts/time.js"></script>
+</body>
+</html>

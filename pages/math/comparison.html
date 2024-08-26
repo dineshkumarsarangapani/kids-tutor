@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparison Practice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        input[type="number"], button, select {
+            font-size: 1.5em;
+            padding: 10px;
+            margin: 5px;
+            width: calc(50% - 10px);
+        }
+        .question-container, .result-container {
+            margin-top: 20px;
+            display: none;
+        }
+        .question-container {
+            font-size: 2em;
+        }
+        .answer-select {
+            font-size: 1.5em;
+            padding: 10px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .submitted-values {
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        .scroll-animation {
+            animation: scrollUp 1s ease-out forwards;
+        }
+        @keyframes scrollUp {
+            0% {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .result-container p {
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Comparison Practice</h1>
+    <form id="configForm">
+        <div class="form-group">
+            <label for="range">Select number range:</label><br>
+            <input type="number" id="rangeMin" placeholder="Min" required>
+            <input type="number" id="rangeMax" placeholder="Max" required>
+        </div>
+        <div class="form-group">
+            <label for="quantity">Number of questions:</label><br>
+            <input type="number" id="quantity" min="1" required>
+        </div>
+        <div class="form-group">
+            <label for="timer">Include timer:</label>
+            <input type="checkbox" id="timer">
+        </div>
+        <button type="submit">Start</button>
+    </form>
+
+    <div class="question-container" id="questionContainer">
+        <p id="question"></p>
+        <select id="answerSelect" class="answer-select">
+            <option value=">">&gt; (Greater than)</option>
+            <option value="<">&lt; (Less than)</option>
+            <option value="=">= (Equal)</option>
+        </select>
+        <button id="submitAnswer">Submit</button>
+        <p id="score"></p>
+        <p id="timerDisplay" class="hidden"></p>
+        <div class="submitted-values" id="submittedValues"></div>
+    </div>
+
+    <div id="resultContainer" class="result-container">
+        <h2>Your Results</h2>
+        <p id="finalScore"></p>
+        <div id="submittedAnswers"></div>
+        <button id="exportResults">Export Results</button>
+        <button id="exportPDF">Export Questions as PDF</button>
+        <a href="../../index.html">Back to Index</a>
+    </div>
+</div>
+
+<script>
+    const configForm = document.getElementById('configForm');
+    const questionContainer = document.getElementById('questionContainer');
+    const questionElem = document.getElementById('question');
+    const answerSelect = document.getElementById('answerSelect');
+    const submitAnswerBtn = document.getElementById('submitAnswer');
+    const scoreElem = document.getElementById('score');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const submittedValuesElem = document.getElementById('submittedValues');
+    const resultContainer = document.getElementById('resultContainer');
+    const finalScoreElem = document.getElementById('finalScore');
+    const submittedAnswersElem = document.getElementById('submittedAnswers');
+
+    let questions = [];
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let timerInterval;
+    let includeTimer = false;
+    let submissions = [];
+
+    configForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        startGame();
+    });
+
+    function startGame() {
+        const rangeMin = parseInt(document.getElementById('rangeMin').value);
+        const rangeMax = parseInt(document.getElementById('rangeMax').value);
+        const quantity = parseInt(document.getElementById('quantity').value);
+        includeTimer = document.getElementById('timer').checked;
+        generateQuestions(rangeMin, rangeMax, quantity);
+        displayQuestion();
+        configForm.style.display = 'none';
+        questionContainer.style.display = 'block';
+        if (includeTimer) {
+            startTimer();
+        }
+    }
+
+    function generateQuestions(min, max, quantity) {
+        questions = [];
+        for (let i = 0; i < quantity; i++) {
+            const num1 = Math.floor(Math.random() * (max - min + 1)) + min;
+            const num2 = Math.floor(Math.random() * (max - min + 1)) + min;
+            questions.push({ num1, num2 });
+        }
+    }
+
+    function displayQuestion() {
+        if (currentQuestionIndex < questions.length) {
+            const { num1, num2 } = questions[currentQuestionIndex];
+            questionElem.innerHTML = `${num1} ? ${num2}`;
+            answerSelect.value = "";
+        } else {
+            endGame();
+        }
+    }
+
+    submitAnswerBtn.addEventListener('click', function () {
+        const selectedOperator = answerSelect.value;
+        const { num1, num2 } = questions[currentQuestionIndex];
+
+        let isCorrect = false;
+        switch (selectedOperator) {
+            case '>':
+                isCorrect = num1 > num2;
+                break;
+            case '<':
+                isCorrect = num1 < num2;
+                break;
+            case '=':
+                isCorrect = num1 === num2;
+                break;
+            case '>=':
+                isCorrect = num1 >= num2;
+                break;
+            case '<=':
+                isCorrect = num1 <= num2;
+                break;
+        }
+
+        submissions.push({
+            question: `${num1} ? ${num2}`,
+            correctAnswer: getCorrectOperator(num1, num2),
+            userAnswer: selectedOperator,
+            isCorrect
+        });
+
+        if (isCorrect) {
+            score++;
+        }
+
+        scoreElem.textContent = `Score: ${score}`;
+        submittedValuesElem.innerHTML += `<p>${num1} ${selectedOperator} ${num2} ${isCorrect ? '✔️' : '❌'}</p>`;
+
+        currentQuestionIndex++;
+        displayQuestion();
+    });
+
+    function getCorrectOperator(num1, num2) {
+        if (num1 > num2) return '>';
+        if (num1 < num2) return '<';
+        if (num1 === num2) return '=';
+        if (num1 >= num2) return '>=';
+        if (num1 <= num2) return '<=';
+    }
+
+    function endGame() {
+        questionContainer.style.display = 'none';
+        resultContainer.style.display = 'block';
+        finalScoreElem.textContent = `Final Score: ${score}/${questions.length}`;
+        submissions.forEach(submission => {
+            const answerElement = document.createElement('p');
+            answerElement.textContent = `${submission.question} (${submission.correctAnswer}) (Your answer: ${submission.userAnswer}) ${submission.isCorrect ? '✔️' : '❌'}`;
+            submittedAnswersElem.appendChild(answerElement);
+        });
+    }
+
+    function startTimer() {
+        let timeRemaining = 30;
+        timerDisplay.textContent = `Time left: ${timeRemaining} seconds`;
+        timerDisplay.classList.remove('hidden');
+
+        timerInterval = setInterval(() => {
+            timeRemaining--;
+            timerDisplay.textContent = `Time left: ${timeRemaining} seconds`;
+
+            if (timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                endGame();
+            }
+        }, 1000);
+    }
+
+    document.getElementById('exportResults').addEventListener('click', function () {
+        const blob = new Blob([JSON.stringify(submissions, null, 2)], { type: 'application/json' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'results.json';
+        link.click();
+    });
+
+    document.getElementById('exportPDF').addEventListener('click', function () {
+        const questionsText = questions.map(q => `${q.num1} ? ${q.num2}`).join('\n');
+        const blob = new Blob([questionsText], { type: 'application/pdf' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'questions.pdf';
+        link.click();
+    });
+</script>
+</body>
+</html>
