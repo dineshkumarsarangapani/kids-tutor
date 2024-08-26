@@ -6,19 +6,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const rangeMax = parseInt(document.getElementById('rangeMax').value);
         const quantity = parseInt(document.getElementById('quantity').value);
         const includeTimer = document.getElementById('timer').checked;
+        const zeroReminder = document.getElementById('zeroReminder').checked;
+        const avoidSameNumbers = document.getElementById('avoidSameNumbers').checked;
 
-        startQuiz(rangeMin, rangeMax, quantity, includeTimer);
+        // Enforce min/max values
+        if (isNaN(rangeMin) || isNaN(rangeMax) || rangeMin <= 0 || rangeMax <= rangeMin) {
+            alert('Please enter valid range values. Min should be positive and less than Max.');
+            return;
+        }
+
+        if (isNaN(quantity) || quantity < 1) {
+            alert('Please enter a valid quantity (at least 1).');
+            return;
+        }
+
+        startQuiz(rangeMin, rangeMax, quantity, includeTimer, zeroReminder, avoidSameNumbers);
     });
 
     let currentQuestion = 0;
     let score = 0;
     let questions = [];
 
-    function startQuiz(rangeMin, rangeMax, quantity, includeTimer) {
+    function startQuiz(rangeMin, rangeMax, quantity, includeTimer, zeroReminder, avoidSameNumbers) {
         document.getElementById('configForm').classList.add('hidden');
         document.getElementById('questionContainer').style.display = 'block';
 
-        questions = generateQuestions(rangeMin, rangeMax, quantity);
+        questions = generateQuestions(rangeMin, rangeMax, quantity, zeroReminder, avoidSameNumbers);
         displayQuestion(currentQuestion);
 
         if (includeTimer) {
@@ -26,11 +39,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    function generateQuestions(rangeMin, rangeMax, quantity) {
+    function generateQuestions(rangeMin, rangeMax, quantity, zeroReminder, avoidSameNumbers) {
         const questions = [];
         for (let i = 0; i < quantity; i++) {
-            const num2 = getRandomInt(rangeMin, rangeMax);
-            const num1 = getRandomInt(num2, rangeMax * num2); // Ensure num1 is divisible by num2
+            let num2, num1;
+
+            do {
+                num2 = getRandomInt(rangeMin, rangeMax);
+
+                if (zeroReminder) {
+                    // Ensure that num1 is divisible by num2 (perfect division)
+                    do {
+                        num1 = getRandomInt(num2, rangeMax);
+                    } while (num1 % num2 !== 0);
+                } else {
+                    // Allow non-perfect divisions
+                    num1 = getRandomInt(num2, rangeMax);
+                }
+
+            } while (avoidSameNumbers && num1 === num2);
+
             questions.push({ num1, num2, userAnswer: null, isCorrect: false });
         }
         return questions;
@@ -86,7 +114,7 @@ document.addEventListener('DOMContentLoaded', function() {
         newSubmission.className = 'scroll-animation';
 
         const correctSymbol = question.isCorrect ? '✔️' : '✖️';
-        newSubmission.textContent = `${question.num1} + ${question.num2} = ${question.userAnswer} ${correctSymbol}`;
+        newSubmission.textContent = `${question.num1} ÷ ${question.num2} = ${question.userAnswer} ${correctSymbol}`;
 
         submittedValuesContainer.appendChild(newSubmission);
 

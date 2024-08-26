@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
         newSubmission.className = 'scroll-animation';
 
         const correctSymbol = question.isCorrect ? '✔️' : '✖️';
-        newSubmission.textContent = `${question.num1} + ${question.num2} = ${question.userAnswer} ${correctSymbol}`;
+        newSubmission.textContent = `${question.num1} x ${question.num2} = ${question.userAnswer} ${correctSymbol}`;
 
         submittedValuesContainer.appendChild(newSubmission);
 
