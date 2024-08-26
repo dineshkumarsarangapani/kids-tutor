@@ -89,7 +89,11 @@ document.addEventListener('DOMContentLoaded', function() {
         newSubmission.textContent = `${question.num1} + ${question.num2} = ${question.userAnswer} ${correctSymbol}`;
 
         submittedValuesContainer.appendChild(newSubmission);
+
+        // Optionally scroll to the bottom of the container
+        submittedValuesContainer.scrollTop = submittedValuesContainer.scrollHeight;
     }
+
 
     function endQuiz() {
         document.getElementById('questionContainer').style.display = 'none';

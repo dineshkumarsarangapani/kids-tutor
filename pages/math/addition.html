@@ -50,7 +50,23 @@
         .submitted-values {
             font-size: 1.2em;
             margin-top: 20px;
+            height: 150px; /* Adjust the height as needed */
+            overflow: hidden; /* Optional: hides overflow if content exceeds height */
+            line-height: 50px; /* Centers text vertically if you are using single-line text */
         }
+        #submittedValues {
+            height: 200px; /* Adjust height as needed */
+            overflow-y: auto; /* Enables vertical scrolling */
+            border: 1px solid #ddd; /* Optional: adds a border for better visibility */
+            padding: 10px; /* Optional: adds padding inside the container */
+            box-sizing: border-box; /* Ensures padding and border are included in the height */
+        }
+
+        .scroll-animation {
+            margin: 0; /* Removes default margins */
+            padding: 5px 0; /* Optional: adds padding between items */
+        }
+
         .hidden {
             display: none;
         }

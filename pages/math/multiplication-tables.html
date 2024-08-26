@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Comparison Practice</title>
+    <title>Multiplication Practice</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -41,7 +41,7 @@
         .question-container {
             font-size: 2em;
         }
-        .answer-select {
+        .answer-input {
             font-size: 1.5em;
             padding: 10px;
             width: 100%;
@@ -89,16 +89,32 @@
 </head>
 <body>
 <div class="container">
-    <h1>Comparison Practice</h1>
+    <h1>Multiplication Practice</h1>
     <form id="configForm">
         <div class="form-group">
-            <label for="range">Select number range:</label><br>
-            <input type="number" id="rangeMin" placeholder="Min" required>
-            <input type="number" id="rangeMax" placeholder="Max" required>
+            <label for="tables">Choose Multiplication Tables:</label><br>
+            <select id="tables" multiple required>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
+            </select>
         </div>
         <div class="form-group">
-            <label for="quantity">Number of questions:</label><br>
-            <input type="number" id="quantity" min="1" required>
+            <label for="upperLimit">Upper Limit of Multiplier (default 10):</label><br>
+            <input type="number" id="upperLimit" value="10" min="1">
+        </div>
+        <div class="form-group">
+            <label for="randomize">Randomize Questions:</label>
+            <input type="checkbox" id="randomize">
         </div>
         <div class="form-group">
             <label for="timer">Include timer:</label>
@@ -109,11 +125,7 @@
 
     <div class="question-container" id="questionContainer">
         <p id="question"></p>
-        <select id="answerSelect" class="answer-select">
-            <option value=">">&gt; (Greater than)</option>
-            <option value="<">&lt; (Less than)</option>
-            <option value="=">= (Equal)</option>
-        </select>
+        <input type="number" id="answerInput" class="answer-input" placeholder="Your answer">
         <button id="submitAnswer">Submit</button>
         <p id="score"></p>
         <p id="timerDisplay" class="hidden"></p>
@@ -134,7 +146,7 @@
     const configForm = document.getElementById('configForm');
     const questionContainer = document.getElementById('questionContainer');
     const questionElem = document.getElementById('question');
-    const answerSelect = document.getElementById('answerSelect');
+    const answerInput = document.getElementById('answerInput');
     const submitAnswerBtn = document.getElementById('submitAnswer');
     const scoreElem = document.getElementById('score');
     const timerDisplay = document.getElementById('timerDisplay');
@@ -148,6 +160,7 @@
     let score = 0;
     let timerInterval;
     let includeTimer = false;
+    let randomize = false;
     let submissions = [];
 
     configForm.addEventListener('submit', function (event) {
@@ -156,11 +169,14 @@
     });
 
     function startGame() {
-        const rangeMin = parseInt(document.getElementById('rangeMin').value);
-        const rangeMax = parseInt(document.getElementById('rangeMax').value);
-        const quantity = parseInt(document.getElementById('quantity').value);
+        const selectedTables = Array.from(document.getElementById('tables').selectedOptions).map(option => parseInt(option.value));
+        const upperLimit = parseInt(document.getElementById('upperLimit').value) || 10;
+        randomize = document.getElementById('randomize').checked;
         includeTimer = document.getElementById('timer').checked;
-        generateQuestions(rangeMin, rangeMax, quantity);
+        generateQuestions(selectedTables, upperLimit);
+        if (randomize) {
+            shuffleArray(questions);
+        }
         displayQuestion();
         configForm.style.display = 'none';
         questionContainer.style.display = 'block';
@@ -169,52 +185,43 @@
         }
     }
 
-    function generateQuestions(min, max, quantity) {
+    function generateQuestions(tables, upperLimit) {
         questions = [];
-        for (let i = 0; i < quantity; i++) {
-            const num1 = Math.floor(Math.random() * (max - min + 1)) + min;
-            const num2 = Math.floor(Math.random() * (max - min + 1)) + min;
-            questions.push({ num1, num2 });
+        for (let table of tables) {
+            for (let i = 1; i <= upperLimit; i++) {
+                questions.push({ table, multiplier: i });
+            }
         }
     }
 
     function displayQuestion() {
         if (currentQuestionIndex < questions.length) {
-            const { num1, num2 } = questions[currentQuestionIndex];
-            questionElem.innerHTML = `${num1} ? ${num2}`;
-            answerSelect.value = "";
+            const { table, multiplier } = questions[currentQuestionIndex];
+            questionElem.innerHTML = `${table} × ${multiplier}`;
+            answerInput.value = '';
+            answerInput.focus();
         } else {
             endGame();
         }
     }
 
-    submitAnswerBtn.addEventListener('click', function () {
-        const selectedOperator = answerSelect.value;
-        const { num1, num2 } = questions[currentQuestionIndex];
-
-        let isCorrect = false;
-        switch (selectedOperator) {
-            case '>':
-                isCorrect = num1 > num2;
-                break;
-            case '<':
-                isCorrect = num1 < num2;
-                break;
-            case '=':
-                isCorrect = num1 === num2;
-                break;
-            case '>=':
-                isCorrect = num1 >= num2;
-                break;
-            case '<=':
-                isCorrect = num1 <= num2;
-                break;
+    // Add the event listener for pressing Enter to submit the answer
+    answerInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            submitAnswerBtn.click(); // Trigger the button click when Enter is pressed
         }
+    });
+
+    submitAnswerBtn.addEventListener('click', function () {
+        const userAnswer = parseInt(answerInput.value);
+        const { table, multiplier } = questions[currentQuestionIndex];
+        const correctAnswer = table * multiplier;
+        const isCorrect = userAnswer === correctAnswer;
 
         submissions.push({
-            question: `${num1} ? ${num2}`,
-            correctAnswer: getCorrectOperator(num1, num2),
-            userAnswer: selectedOperator,
+            question: `${table} × ${multiplier}`,
+            correctAnswer,
+            userAnswer,
             isCorrect
         });
 
@@ -223,19 +230,11 @@
         }
 
         scoreElem.textContent = `Score: ${score}`;
-        submittedValuesElem.innerHTML += `<p>${num1} ${selectedOperator} ${num2} ${isCorrect ? '✔️' : '❌'}</p>`;
+        submittedValuesElem.innerHTML += `<p>${table} × ${multiplier} = ${userAnswer} ${isCorrect ? '✔️' : '❌'}</p>`;
 
         currentQuestionIndex++;
         displayQuestion();
     });
-
-    function getCorrectOperator(num1, num2) {
-        if (num1 > num2) return '>';
-        if (num1 < num2) return '<';
-        if (num1 === num2) return '=';
-        if (num1 >= num2) return '>=';
-        if (num1 <= num2) return '<=';
-    }
 
     function endGame() {
         questionContainer.style.display = 'none';
@@ -243,8 +242,9 @@
         finalScoreElem.textContent = `Final Score: ${score}/${questions.length}`;
         submissions.forEach(submission => {
             const answerElement = document.createElement('p');
-            answerElement.textContent = `${submission.question} (${submission.correctAnswer}) (Your answer: ${submission.userAnswer}) ${submission.isCorrect ? '✔️' : '❌'}`;
+            answerElement.textContent = `${submission.question} = ${submission.correctAnswer} (Your answer: ${submission.userAnswer}) ${submission.isCorrect ? '✔️' : '❌'}`;
             submittedAnswersElem.appendChild(answerElement);
+            submittedAnswersElem.scrollTop = submittedAnswersElem.scrollHeight;
         });
     }
 
@@ -264,6 +264,13 @@
         }, 1000);
     }
 
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
     document.getElementById('exportResults').addEventListener('click', function () {
         const blob = new Blob([JSON.stringify(submissions, null, 2)], { type: 'application/json' });
         const link = document.createElement('a');
@@ -273,7 +280,7 @@
     });
 
     document.getElementById('exportPDF').addEventListener('click', function () {
-        const questionsText = questions.map(q => `${q.num1} ? ${q.num2}`).join('\n');
+        const questionsText = questions.map(q => `${q.table} × ${q.multiplier}`).join('\n');
         const blob = new Blob([questionsText], { type: 'application/pdf' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);

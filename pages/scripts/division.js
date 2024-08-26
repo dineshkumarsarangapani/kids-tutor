@@ -86,9 +86,12 @@ document.addEventListener('DOMContentLoaded', function() {
         newSubmission.className = 'scroll-animation';
 
         const correctSymbol = question.isCorrect ? '✔️' : '✖️';
-        newSubmission.textContent = `${question.num1} ÷ ${question.num2} = ${question.userAnswer} ${correctSymbol}`;
+        newSubmission.textContent = `${question.num1} + ${question.num2} = ${question.userAnswer} ${correctSymbol}`;
 
         submittedValuesContainer.appendChild(newSubmission);
+
+        // Optionally scroll to the bottom of the container
+        submittedValuesContainer.scrollTop = submittedValuesContainer.scrollHeight;
     }
 
     function endQuiz() {
