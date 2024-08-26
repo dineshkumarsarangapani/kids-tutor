@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Addition</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        input[type="number"], button {
+            font-size: 1.5em;
+            padding: 10px;
+            margin: 5px;
+            width: calc(50% - 10px);
+        }
+        .question-container, .result-container {
+            margin-top: 20px;
+            display: none;
+        }
+        .question-container {
+            font-size: 2em;
+        }
+        .answer-input {
+            font-size: 1.5em;
+            padding: 10px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .submitted-values {
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        .scroll-animation {
+            animation: scrollUp 1s ease-out forwards;
+        }
+        @keyframes scrollUp {
+            0% {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Addition Practice</h1>
+    <form id="configForm">
+        <div class="form-group">
+            <label for="range">Select number range:</label><br>
+            <input type="number" id="rangeMin" placeholder="Min" required>
+            <input type="number" id="rangeMax" placeholder="Max" required>
+        </div>
+        <div class="form-group">
+            <label for="quantity">Number of questions:</label><br>
+            <input type="number" id="quantity" min="1" required>
+        </div>
+        <div class="form-group">
+            <label for="timer">Include timer:</label>
+            <input type="checkbox" id="timer">
+        </div>
+        <button type="submit">Start</button>
+    </form>
+
+    <div class="question-container" id="questionContainer">
+        <p id="question"></p>
+        <input type="number" id="answerInput" class="answer-input" placeholder="Your answer">
+        <button id="submitAnswer">Submit</button>
+        <p id="score"></p>
+        <p id="timerDisplay" class="hidden"></p>
+        <div class="submitted-values" id="submittedValues"></div>
+    </div>
+
+    <div id="resultContainer" class="result-container">
+        <h2>Your Results</h2>
+        <p id="finalScore"></p>
+        <button id="exportResults">Export Results</button>
+        <button id="exportPDF">Export Questions as PDF</button>
+        <a href="../../index.html">Back to Index</a>
+    </div>
+</div>
+
+<script src="../scripts/addition.js"></script>
+</body>
+</html>
