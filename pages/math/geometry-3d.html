@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Shapes Problem Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2vw 4vw -1vw rgba(0, 0, 0, 0.8);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        p {
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+
+        input[type="text"], button, select {
+            font-size: 1.2em;
+            padding: 10px;
+            width: 250px;
+            margin: 10px auto;
+            display: block;
+        }
+
+        select[multiple] {
+            height: 120px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .score {
+            font-size: 1.5em;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>3D Shapes Problem Game</h1>
+    <label for="shapeSelect">Choose 3D shapes:</label>
+    <select id="shapeSelect" multiple>
+        <option value="cube">Cube</option>
+        <option value="sphere">Sphere</option>
+        <option value="pyramid">Pyramid</option>
+    </select>
+    <label for="problemType">Choose problem type:</label>
+    <select id="problemType">
+        <option value="simple">Simple (e.g., Faces, Vertices, Edges)</option>
+        <option value="complex">Complex (e.g., Surface Area, Volume)</option>
+    </select>
+    <button id="startGame">Start Game</button>
+
+    <p id="question" class="hidden"></p>
+    <input type="text" id="userAnswer" placeholder="Your answer" class="hidden">
+    <button id="submitAnswer" class="hidden">Submit</button>
+    <button id="tryAgain" class="hidden">Try Again</button>
+    <p id="resultMessage" class="hidden"></p>
+    <p class="score hidden">Score: <span id="score">0</span>/10</p>
+</div>
+
+<script>
+    const questionEl = document.getElementById('question');
+    const userAnswerEl = document.getElementById('userAnswer');
+    const submitAnswerBtn = document.getElementById('submitAnswer');
+    const tryAgainBtn = document.getElementById('tryAgain');
+    const resultMessage = document.getElementById('resultMessage');
+    const scoreElement = document.getElementById('score');
+    const shapeSelect = document.getElementById('shapeSelect');
+    const problemTypeSelect = document.getElementById('problemType');
+    const startGameBtn = document.getElementById('startGame');
+
+    let currentQuestion;
+    let score = 0;
+    let selectedShapes = [];
+    let problemType = "";
+
+    // Function to start the game based on selected shapes and problem type
+    function startGame() {
+        selectedShapes = Array.from(shapeSelect.selectedOptions).map(option => option.value);
+        problemType = problemTypeSelect.value;
+
+        if (selectedShapes.length === 0) {
+            alert("Please select at least one shape to start the game.");
+            return;
+        }
+
+        document.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden'));
+        startGameBtn.classList.add('hidden');
+        shapeSelect.classList.add('hidden');
+        problemTypeSelect.classList.add('hidden');
+        generateRandomProblem();
+    }
+
+    // Function to generate a random problem based on selected shapes and problem type
+    function generateRandomProblem() {
+        const randomShape = selectedShapes[Math.floor(Math.random() * selectedShapes.length)];
+
+        switch (problemType) {
+            case "simple":
+                generateSimpleProblem(randomShape);
+                break;
+            case "complex":
+                generateComplexProblem(randomShape);
+                break;
+        }
+
+        questionEl.textContent = currentQuestion.question;
+    }
+
+    // Generate simple problems (e.g., Faces, Vertices, Edges)
+    function generateSimpleProblem(shape) {
+        switch (shape) {
+            case "cube":
+                currentQuestion = {
+                    question: `How many faces, edges, and vertices does a cube have?`,
+                    answer: "6,12,8"
+                };
+                break;
+            case "sphere":
+                currentQuestion = {
+                    question: `How many faces, edges, and vertices does a sphere have?`,
+                    answer: "1,0,0"
+                };
+                break;
+            case "pyramid":
+                const pyramidType = Math.random() < 0.5 ? "triangular" : "square";
+                if (pyramidType === "triangular") {
+                    currentQuestion = {
+                        question: `How many faces, edges, and vertices does a triangular pyramid have?`,
+                        answer: "4 faces, 6 edges, 4 vertices"
+                    };
+                } else {
+                    currentQuestion = {
+                        question: `How many faces, edges, and vertices does a square pyramid have?`,
+                        answer: "5 faces, 8 edges, 5 vertices"
+                    };
+                }
+                break;
+        }
+    }
+
+    // Generate complex problems (e.g., Surface Area, Volume)
+    function generateComplexProblem(shape) {
+        let side, radius, height, baseArea, volume, surfaceArea;
+
+        switch (shape) {
+            case "cube":
+                side = Math.floor(Math.random() * 10) + 3;
+                volume = side ** 3;
+                surfaceArea = 6 * (side ** 2);
+                const isVolumeCube = Math.random() < 0.5;
+                if (isVolumeCube) {
+                    currentQuestion = {
+                        question: `What is the volume of a cube with side length ${side} units?`,
+                        answer: volume
+                    };
+                } else {
+                    currentQuestion = {
+                        question: `What is the surface area of a cube with side length ${side} units?`,
+                        answer: surfaceArea
+                    };
+                }
+                break;
+
+            case "sphere":
+                radius = Math.floor(Math.random() * 10) + 3;
+                volume = (4 / 3) * Math.PI * radius ** 3;
+                surfaceArea = 4 * Math.PI * radius ** 2;
+                const isVolumeSphere = Math.random() < 0.5;
+                if (isVolumeSphere) {
+                    currentQuestion = {
+                        question: `What is the volume of a sphere with radius ${radius} units? (Use π = 3.14)`,
+                        answer: parseFloat(volume.toFixed(2))
+                    };
+                } else {
+                    currentQuestion = {
+                        question: `What is the surface area of a sphere with radius ${radius} units? (Use π = 3.14)`,
+                        answer: parseFloat(surfaceArea.toFixed(2))
+                    };
+                }
+                break;
+
+            case "pyramid":
+                const pyramidType = Math.random() < 0.5 ? "triangular" : "square";
+                if (pyramidType === "triangular") {
+                    baseArea = Math.floor(Math.random() * 10) + 3;
+                    height = Math.floor(Math.random() * 10) + 3;
+                    volume = (1 / 3) * baseArea * height;
+                    currentQuestion = {
+                        question: `What is the volume of a triangular pyramid with base area ${baseArea} square units and height ${height} units?`,
+                        answer: parseFloat(volume.toFixed(2))
+                    };
+                } else {
+                    side = Math.floor(Math.random() * 10) + 3;
+                    height = Math.floor(Math.random() * 10) + 3;
+                    volume = (1 / 3) * side ** 2 * height;
+                    currentQuestion = {
+                        question: `What is the volume of a square pyramid with base side length ${side} units and height ${height} units?`,
+                        answer: parseFloat(volume.toFixed(2))
+                    };
+                }
+                break;
+        }
+    }
+
+    // Start the game on button click
+    startGameBtn.addEventListener('click', startGame);
+
+    // Validate user input
+    function validateAnswer() {
+        const userAnswer = userAnswerEl.value.trim().toLowerCase();
+
+        if (userAnswer === currentQuestion.answer.toString().toLowerCase()) {
+            score++;
+            resultMessage.textContent = `Correct!`;
+            resultMessage.style.color = "green";
+        } else {
+            resultMessage.textContent = `Incorrect! The correct answer was ${currentQuestion.answer}.`;
+            resultMessage.style.color = "red";
+        }
+
+        scoreElement.textContent = score;
+        submitAnswerBtn.classList.add('hidden');
+        tryAgainBtn.classList.remove('hidden');
+
+        if (score === 10) {
+            alert("Congratulations! You've answered 10 questions correctly!");
+            score = 0;
+            scoreElement.textContent = score;
+        }
+    }
+
+    // Reset the game for another round
+    function resetGame() {
+        userAnswerEl.value = "";
+        resultMessage.textContent = "";
+        submitAnswerBtn.classList.remove('hidden');
+        tryAgainBtn.classList.add('hidden');
+        generateRandomProblem();
+    }
+
+    // Event listeners
+    submitAnswerBtn.addEventListener('click', validateAnswer);
+    tryAgainBtn.addEventListener('click', resetGame);
+</script>
+</body>
+</html>

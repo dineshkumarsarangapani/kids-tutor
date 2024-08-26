@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Data Interpretation Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2vw 4vw -1vw rgba(0, 0, 0, 0.8);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        p {
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+
+        table {
+            width: 100%;
+            margin-bottom: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        input[type="text"], button {
+            font-size: 1.2em;
+            padding: 10px;
+            width: 250px;
+            margin: 10px auto;
+            display: block;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .score {
+            font-size: 1.5em;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Dynamic Data Interpretation Game</h1>
+    <div id="tableContainer"></div>
+    <p id="question" class="hidden"></p>
+    <input type="text" id="userAnswer" placeholder="Your answer" class="hidden">
+    <button id="submitAnswer" class="hidden">Submit</button>
+    <button id="tryAgain" class="hidden">Try Again</button>
+    <p id="resultMessage" class="hidden"></p>
+    <p class="score hidden">Score: <span id="score">0</span>/10</p>
+</div>
+
+<script>
+    const questionEl = document.getElementById('question');
+    const userAnswerEl = document.getElementById('userAnswer');
+    const submitAnswerBtn = document.getElementById('submitAnswer');
+    const tryAgainBtn = document.getElementById('tryAgain');
+    const resultMessage = document.getElementById('resultMessage');
+    const scoreElement = document.getElementById('score');
+    const tableContainer = document.getElementById('tableContainer');
+
+    let currentQuestion;
+    let score = 0;
+
+    // Utility function to generate random integers
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // Utility function to randomly select an element from an array
+    function getRandomElement(array) {
+        return array[Math.floor(Math.random() * array.length)];
+    }
+
+    // Function to generate a random table and related questions
+    function generateRandomTableAndQuestion() {
+        const templateIndex = getRandomInt(1, 8);
+        let tableData = {};
+        switch (templateIndex) {
+            case 1:
+                tableData = generateStudentScoresTable();
+                break;
+            case 2:
+                tableData = generateCompanySalesTable();
+                break;
+            case 3:
+                tableData = generateWeatherTable();
+                break;
+            case 4:
+                tableData = generateSportsStatsTable();
+                break;
+            case 5:
+                tableData = generatePopulationGrowthTable();
+                break;
+            case 6:
+                tableData = generateMovieRatingsTable();
+                break;
+            case 7:
+                tableData = generateInventoryTable();
+                break;
+            case 8:
+                tableData = generateMonthlyExpensesTable();
+                break;
+        }
+
+        displayTable(tableData);
+        currentQuestion = tableData.questions[getRandomInt(0, tableData.questions.length - 1)];
+        questionEl.textContent = currentQuestion.question;
+    }
+
+    // Function to generate a table for Student Test Scores with dynamic subjects
+    function generateStudentScoresTable() {
+        const names = ["John", "Emma", "Liam", "Olivia"];
+        const subjects = ["Math", "Science", "English"];
+        const data = names.map(name => {
+            return [name, getRandomInt(60, 100), getRandomInt(60, 100), getRandomInt(60, 100)];
+        });
+
+        const randomSubject = getRandomElement(subjects);
+        const subjectIndex = subjects.indexOf(randomSubject) + 1;
+        const randomStudent = getRandomElement(data);
+
+        return {
+            title: "Student Test Scores",
+            headers: ["Name", ...subjects],
+            data,
+            questions: [
+                {
+                    question: `What is ${randomStudent[0]}'s score in ${randomSubject}?`,
+                    answer: randomStudent[subjectIndex].toString()
+                },
+                {
+                    question: `Who scored the highest in ${randomSubject}?`,
+                    answer: names[data.reduce((prev, curr) => curr[subjectIndex] > prev[subjectIndex] ? curr : prev, data[0])[0]]
+                }
+            ]
+        };
+    }
+
+    // Function to generate a table for Company Sales Data with dynamic product names
+    function generateCompanySalesTable() {
+        const productBName = getRandomElement(["Product X", "Product Y", "Product Z"]);
+        const data = [
+            ["Q1", getRandomInt(5000, 10000), getRandomInt(3000, 7000)],
+            ["Q2", getRandomInt(5000, 10000), getRandomInt(3000, 7000)],
+            ["Q3", getRandomInt(5000, 10000), getRandomInt(3000, 7000)],
+            ["Q4", getRandomInt(5000, 10000), getRandomInt(3000, 7000)]
+        ];
+        data.forEach(row => row.push(row[1] + row[2]));
+
+        const highestSalesQuarter = data.reduce((maxRow, row) => row[3] > maxRow[3] ? row : maxRow, data[0])[0];
+
+        return {
+            title: "Company Sales Data",
+            headers: ["Quarter", "Product A Sales", `${productBName} Sales`, "Total Sales"],
+            data,
+            questions: [
+                {
+                    question: `What were the total sales in ${data[2][0]}?`,
+                    answer: data[2][3].toString()
+                },
+                {
+                    question: `Which quarter had the highest total sales?`,
+                    answer: highestSalesQuarter
+                },
+                {
+                    question: `What were the total sales for ${productBName} across all quarters?`,
+                    answer: data.reduce((total, row) => total + row[2], 0).toString()
+                }
+            ]
+        };
+    }
+
+    // Function to generate a table for Movie Ratings
+    function generateMovieRatingsTable() {
+        const critics = ["Critic A", "Critic B", "Critic C", "Critic D"];
+        const data = [
+            ["Movie 1", getRandomInt(60, 100), getRandomInt(60, 100), getRandomInt(60, 100), getRandomInt(60, 100)],
+            ["Movie 2", getRandomInt(60, 100), getRandomInt(60, 100), getRandomInt(60, 100), getRandomInt(60, 100)],
+            ["Movie 3", getRandomInt(60, 100), getRandomInt(60, 100), getRandomInt(60, 100), getRandomInt(60, 100)],
+            ["Movie 4", getRandomInt(60, 100), getRandomInt(60, 100), getRandomInt(60, 100), getRandomInt(60, 100)]
+        ];
+
+        const randomMovie = getRandomElement(data);
+
+        return {
+            title: "Movie Ratings",
+            headers: ["Movie", ...critics],
+            data,
+            questions: [
+                {
+                    question: `What is the rating of ${randomMovie[0]} by ${getRandomElement(critics)}?`,
+                    answer: randomMovie[critics.indexOf(getRandomElement(critics)) + 1].toString()
+                },
+                {
+                    question: `Which movie had the highest average rating?`,
+                    answer: data.reduce((prev, curr) => {
+                        const prevAvg = (prev.slice(1).reduce((a, b) => a + b, 0) / 4);
+                        const currAvg = (curr.slice(1).reduce((a, b) => a + b, 0) / 4);
+                        return currAvg > prevAvg ? curr : prev;
+                    }, data[0])[0]
+                }
+            ]
+        };
+    }
+
+    // Function to generate a table for Inventory Data
+    function generateInventoryTable() {
+        const items = ["Item A", "Item B", "Item C", "Item D"];
+        const data = items.map(item => [item, getRandomInt(100, 500), getRandomInt(50, 200), getRandomInt(30, 100)]);
+
+        const randomItem = getRandomElement(data);
+
+        return {
+            title: "Inventory Data",
+            headers: ["Item", "Quantity", "Reorder Level", "Lead Time (days)"],
+            data,
+            questions: [
+                {
+                    question: `What is the reorder level of ${randomItem[0]}?`,
+                    answer: randomItem[2].toString()
+                },
+                {
+                    question: `Which item has the highest quantity in stock?`,
+                    answer: data.reduce((prev, curr) => curr[1] > prev[1] ? curr : prev, data[0])[0]
+                }
+            ]
+        };
+    }
+
+    // Function to generate a table for Monthly Expenses
+    function generateMonthlyExpensesTable() {
+        const categories = ["Rent", "Utilities", "Groceries", "Transportation"];
+        const months = ["January", "February", "March", "April"];
+        const data = months.map(month => [
+            month,
+            getRandomInt(500, 2000),
+            getRandomInt(100, 500),
+            getRandomInt(200, 800),
+            getRandomInt(50, 300)
+        ]);
+
+        const randomMonth = getRandomElement(data);
+
+        return {
+            title: "Monthly Expenses",
+            headers: ["Month", ...categories],
+            data,
+            questions: [
+                {
+                    question: `What was the total expense for ${randomMonth[0]}?`,
+                    answer: randomMonth.slice(1).reduce((total, val) => total + val, 0).toString()
+                },
+                {
+                    question: `In which month were the Groceries expenses the highest?`,
+                    answer: data.reduce((prev, curr) => curr[3] > prev[3] ? curr : prev, data[0])[0]
+                }
+            ]
+        };
+    }
+
+    // Function to generate a table for Weather Data
+    function generateWeatherTable() {
+        const days = ["Monday", "Tuesday", "Wednesday", "Thursday"];
+        const data = days.map(day => {
+            return [day, getRandomInt(18, 30), getRandomInt(40, 80), getRandomInt(0, 20)];
+        });
+
+        const highestPrecipitationDay = data.reduce((maxRow, row) => row[3] > maxRow[3] ? row : maxRow, data[0])[0];
+
+        return {
+            title: "Weather Data",
+            headers: ["Day", "Temperature (°C)", "Humidity (%)", "Precipitation (mm)"],
+            data,
+            questions: [
+                {
+                    question: `What was the temperature on ${data[2][0]}?`,
+                    answer: data[2][1].toString()
+                },
+                {
+                    question: `Which day had the highest precipitation?`,
+                    answer: highestPrecipitationDay
+                },
+                {
+                    question: `What was the average temperature for the week?`,
+                    answer: (data.reduce((total, row) => total + row[1], 0) / data.length).toFixed(2)
+                }
+            ]
+        };
+    }
+
+    // Function to generate a table for Sports Statistics
+    function generateSportsStatsTable() {
+        const teams = ["Team A", "Team B", "Team C", "Team D"];
+        const data = teams.map(team => {
+            return [team, getRandomInt(15, 30), getRandomInt(5, 15), getRandomInt(50, 100)];
+        });
+
+        const highestWins = Math.max(...data.map(row => row[1]));
+        const topTeam = data.find(row => row[1] === highestWins)[0];
+
+        return {
+            title: "Sports Team Stats",
+            headers: ["Team", "Wins", "Losses", "Points"],
+            data,
+            questions: [
+                {
+                    question: `How many points did ${data[1][0]} score?`,
+                    answer: data[1][3].toString()
+                },
+                {
+                    question: `Which team had the most wins?`,
+                    answer: topTeam
+                },
+                {
+                    question: `What is the total number of points scored by all teams?`,
+                    answer: data.reduce((total, row) => total + row[3], 0).toString()
+                }
+            ]
+        };
+    }
+
+    // Function to generate a table for Population Growth
+    function generatePopulationGrowthTable() {
+        const cities = ["City A", "City B", "City C", "City D"];
+        const data = cities.map(city => {
+            return [city, getRandomInt(500000, 2000000), getRandomInt(50000, 100000)];
+        });
+        data.forEach(row => row.push(row[1] + row[2]));
+
+        const highestGrowthCity = data.reduce((maxRow, row) => row[2] > maxRow[2] ? row : maxRow, data[0])[0];
+
+        return {
+            title: "City Population Growth",
+            headers: ["City", "Current Population", "Population Growth", "Total Population"],
+            data,
+            questions: [
+                {
+                    question: `What is the current population of ${data[0][0]}?`,
+                    answer: data[0][1].toString()
+                },
+                {
+                    question: `Which city had the highest population growth?`,
+                    answer: highestGrowthCity
+                },
+                {
+                    question: `What is the total population for ${data[2][0]} after growth?`,
+                    answer: data[2][3].toString()
+                }
+            ]
+        };
+    }
+
+    // Function to display the table and set the question
+    function displayTable(tableData) {
+        const tableHTML = `
+                <h2>${tableData.title}</h2>
+                <table>
+                    <thead>
+                        <tr>${tableData.headers.map(header => `<th>${header}</th>`).join('')}</tr>
+                    </thead>
+                    <tbody>
+                        ${tableData.data.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join('')}</tr>`).join('')}
+                    </tbody>
+                </table>
+            `;
+        tableContainer.innerHTML = tableHTML;
+    }
+
+    // Initialize with a random table and question
+    generateRandomTableAndQuestion();
+    document.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden'));
+
+    // Validate user input
+    function validateAnswer() {
+        const userAnswer = userAnswerEl.value.trim();
+
+        if (userAnswer === currentQuestion.answer) {
+            score++;
+            resultMessage.textContent = `Correct!`;
+            resultMessage.style.color = "green";
+        } else {
+            resultMessage.textContent = `Incorrect! The correct answer was ${currentQuestion.answer}.`;
+            resultMessage.style.color = "red";
+        }
+
+        scoreElement.textContent = score;
+        submitAnswerBtn.classList.add('hidden');
+        tryAgainBtn.classList.remove('hidden');
+
+        if (score === 10) {
+            alert("Congratulations! You've answered 10 questions correctly!");
+            score = 0;
+            scoreElement.textContent = score;
+        }
+    }
+
+    // Reset the game for another round
+    function resetGame() {
+        userAnswerEl.value = "";
+        resultMessage.textContent = "";
+        submitAnswerBtn.classList.remove('hidden');
+        tryAgainBtn.classList.add('hidden');
+        generateRandomTableAndQuestion();
+    }
+
+    // Event listeners
+    submitAnswerBtn.addEventListener('click', validateAnswer);
+    tryAgainBtn.addEventListener('click', resetGame);
+</script>
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Shapes Problem Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2vw 4vw -1vw rgba(0, 0, 0, 0.8);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        p {
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+
+        input[type="text"], button, select {
+            font-size: 1.2em;
+            padding: 10px;
+            width: 250px;
+            margin: 10px auto;
+            display: block;
+        }
+
+        select[multiple] {
+            height: 120px;
+        }
+
+        canvas {
+            border: 1px solid black;
+            margin: 20px 0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .score {
+            font-size: 1.5em;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>2D Shapes Problem Game</h1>
+    <label for="shapeSelect">Choose shapes:</label>
+    <select id="shapeSelect" multiple>
+        <option value="square">Square</option>
+        <option value="rectangle">Rectangle</option>
+        <option value="circle">Circle</option>
+        <option value="triangle">Triangle</option>
+        <option value="parallelogram">Parallelogram</option>
+        <option value="trapezoid">Trapezoid</option>
+    </select>
+    <button id="startGame">Start Game</button>
+
+    <canvas id="shapeCanvas" width="300" height="300" class="hidden"></canvas>
+    <p id="question" class="hidden"></p>
+    <input type="text" id="userAnswer" placeholder="Your answer" class="hidden">
+    <button id="submitAnswer" class="hidden">Submit</button>
+    <button id="tryAgain" class="hidden">Try Again</button>
+    <p id="resultMessage" class="hidden"></p>
+    <p class="score hidden">Score: <span id="score">0</span>/10</p>
+</div>
+
+<script>
+    const questionEl = document.getElementById('question');
+    const userAnswerEl = document.getElementById('userAnswer');
+    const submitAnswerBtn = document.getElementById('submitAnswer');
+    const tryAgainBtn = document.getElementById('tryAgain');
+    const resultMessage = document.getElementById('resultMessage');
+    const scoreElement = document.getElementById('score');
+    const canvas = document.getElementById('shapeCanvas');
+    const ctx = canvas.getContext('2d');
+    const shapeSelect = document.getElementById('shapeSelect');
+    const startGameBtn = document.getElementById('startGame');
+
+    let currentQuestion;
+    let score = 0;
+    let selectedShapes = [];
+
+    // Function to start the game based on selected shapes
+    function startGame() {
+        selectedShapes = Array.from(shapeSelect.selectedOptions).map(option => option.value);
+        if (selectedShapes.length === 0) {
+            alert("Please select at least one shape to start the game.");
+            return;
+        }
+        document.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden'));
+        startGameBtn.classList.add('hidden');
+        shapeSelect.classList.add('hidden');
+        generateRandomProblem();
+    }
+
+    // Function to generate a random problem based on selected shapes
+    function generateRandomProblem() {
+        const randomShape = selectedShapes[Math.floor(Math.random() * selectedShapes.length)];
+        let side, width, height, base1, base2, radius, area, perimeter, circumference;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear previous drawing
+
+        switch (randomShape) {
+            case "square":
+                const isAreaProblem = Math.random() < 0.5;
+                side = Math.floor(Math.random() * 15) + 5;
+                if (isAreaProblem) {
+                    area = side ** 2;
+                    currentQuestion = {
+                        question: `What is the area of a square with side length ${side} units?`,
+                        answer: area
+                    };
+                } else {
+                    perimeter = 4 * side;
+                    currentQuestion = {
+                        question: `What is the perimeter of a square with side length ${side} units?`,
+                        answer: perimeter
+                    };
+                }
+                drawSquare(side);
+                break;
+
+            case "rectangle":
+                const isRectAreaProblem = Math.random() < 0.5;
+                width = Math.floor(Math.random() * 15) + 5;
+                height = Math.floor(Math.random() * 15) + 5;
+                if (isRectAreaProblem) {
+                    area = width * height;
+                    currentQuestion = {
+                        question: `What is the area of a rectangle with width ${width} units and height ${height} units?`,
+                        answer: area
+                    };
+                } else {
+                    perimeter = 2 * (width + height);
+                    currentQuestion = {
+                        question: `What is the perimeter of a rectangle with width ${width} units and height ${height} units?`,
+                        answer: perimeter
+                    };
+                }
+                drawRectangle(width, height);
+                break;
+
+            case "circle":
+                radius = Math.floor(Math.random() * 10) + 3;
+                const isCircleAreaProblem = Math.random() < 0.5;
+                if (isCircleAreaProblem) {
+                    area = Math.PI * radius ** 2;
+                    currentQuestion = {
+                        question: `What is the area of a circle with radius ${radius} units? (Use π = 3.14)`,
+                        answer: parseFloat(area.toFixed(2))
+                    };
+                } else {
+                    circumference = 2 * Math.PI * radius;
+                    currentQuestion = {
+                        question: `What is the circumference of a circle with radius ${radius} units? (Use π = 3.14)`,
+                        answer: parseFloat(circumference.toFixed(2))
+                    };
+                }
+                drawCircle(radius);
+                break;
+
+            case "triangle":
+                const isTriangleAreaProblem = Math.random() < 0.5;
+                base1 = Math.floor(Math.random() * 15) + 5;
+                height = Math.floor(Math.random() * 15) + 5;
+                if (isTriangleAreaProblem) {
+                    area = 0.5 * base1 * height;
+                    currentQuestion = {
+                        question: `What is the area of a triangle with base ${base1} units and height ${height} units?`,
+                        answer: parseFloat(area.toFixed(2))
+                    };
+                    drawTriangle(base1, height);
+                } else {
+                    const side1 = Math.floor(Math.random() * 10) + 3;
+                    const side2 = Math.floor(Math.random() * 10) + 3;
+                    const side3 = Math.floor(Math.random() * 10) + 3;
+                    perimeter = side1 + side2 + side3;
+                    currentQuestion = {
+                        question: `What is the perimeter of a triangle with sides ${side1}, ${side2}, and ${side3} units?`,
+                        answer: perimeter
+                    };
+                    drawTrianglePerimeter(side1, side2, side3);
+                }
+                break;
+
+            case "parallelogram":
+                base1 = Math.floor(Math.random() * 15) + 5;
+                height = Math.floor(Math.random() * 15) + 5;
+                area = base1 * height;
+                currentQuestion = {
+                    question: `What is the area of a parallelogram with base ${base1} units and height ${height} units?`,
+                    answer: area
+                };
+                drawParallelogram(base1, height);
+                break;
+
+            case "trapezoid":
+                base1 = Math.floor(Math.random() * 15) + 5;
+                base2 = Math.floor(Math.random() * 15) + 5;
+                height = Math.floor(Math.random() * 15) + 5;
+                area = 0.5 * (base1 + base2) * height;
+                currentQuestion = {
+                    question: `What is the area of a trapezoid with bases ${base1} and ${base2} units, and height ${height} units?`,
+                    answer: parseFloat(area.toFixed(2))
+                };
+                drawTrapezoid(base1, base2, height);
+                break;
+        }
+
+        questionEl.textContent = currentQuestion.question;
+    }
+
+    // Function to draw a square on the canvas
+    function drawSquare(side) {
+        const scale = 10;
+        ctx.beginPath();
+        ctx.rect(50, 50, side * scale, side * scale);
+        ctx.stroke();
+    }
+
+    // Function to draw a rectangle on the canvas
+    function drawRectangle(width, height) {
+        const scale = 10;
+        ctx.beginPath();
+        ctx.rect(50, 50, width * scale, height * scale);
+        ctx.stroke();
+    }
+
+    // Function to draw a circle on the canvas
+    function drawCircle(radius) {
+        const scale = 10;
+        ctx.beginPath();
+        ctx.arc(150, 150, radius * scale, 0, 2 * Math.PI);
+        ctx.stroke();
+    }
+
+    // Function to draw a triangle on the canvas
+    function drawTriangle(base, height) {
+        ctx.beginPath();
+        ctx.moveTo(50, 250); // Bottom left corner
+        ctx.lineTo(50 + base * 10, 250); // Bottom right corner
+        ctx.lineTo(50 + (base * 5), 250 - height * 10); // Top corner
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+    // Function to draw a triangle by its perimeter sides
+    function drawTrianglePerimeter(side1, side2, side3) {
+        ctx.beginPath();
+        ctx.moveTo(50, 250); // Bottom left corner
+        ctx.lineTo(50 + side1 * 10, 250); // Bottom right corner
+        ctx.lineTo(50 + side2 * 10, 250 - side3 * 10); // Top corner
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+    // Function to draw a parallelogram on the canvas
+    function drawParallelogram(base, height) {
+        ctx.beginPath();
+        ctx.moveTo(50, 250); // Bottom left corner
+        ctx.lineTo(50 + base * 10, 250); // Bottom right corner
+        ctx.lineTo(50 + (base * 10) + (height * 5), 250 - height * 10); // Top right
+        ctx.lineTo(50 + height * 5, 250 - height * 10); // Top left
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+    // Function to draw a trapezoid on the canvas
+    function drawTrapezoid(base1, base2, height) {
+        const offset = (base1 - base2) / 2 * 10;
+        ctx.beginPath();
+        ctx.moveTo(50, 250); // Bottom left corner
+        ctx.lineTo(50 + base1 * 10, 250); // Bottom right corner
+        ctx.lineTo(50 + offset + base2 * 10, 250 - height * 10); // Top right
+        ctx.lineTo(50 + offset, 250 - height * 10); // Top left
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+    // Start the game on button click
+    startGameBtn.addEventListener('click', startGame);
+
+    // Validate user input
+    function validateAnswer() {
+        const userAnswer = parseFloat(userAnswerEl.value);
+
+        if (userAnswer === currentQuestion.answer) {
+            score++;
+            resultMessage.textContent = `Correct!`;
+            resultMessage.style.color = "green";
+        } else {
+            resultMessage.textContent = `Incorrect! The correct answer was ${currentQuestion.answer}.`;
+            resultMessage.style.color = "red";
+        }
+
+        scoreElement.textContent = score;
+        submitAnswerBtn.classList.add('hidden');
+        tryAgainBtn.classList.remove('hidden');
+
+        if (score === 10) {
+            alert("Congratulations! You've answered 10 questions correctly!");
+            score = 0;
+            scoreElement.textContent = score;
+        }
+    }
+
+    // Reset the game for another round
+    function resetGame() {
+        userAnswerEl.value = "";
+        resultMessage.textContent = "";
+        submitAnswerBtn.classList.remove('hidden');
+        tryAgainBtn.classList.add('hidden');
+        generateRandomProblem();
+    }
+
+    // Event listeners
+    submitAnswerBtn.addEventListener('click', validateAnswer);
+    tryAgainBtn.addEventListener('click', resetGame);
+</script>
+</body>
+</html>

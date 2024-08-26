@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Interpretation and Analysis Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 700px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2vw 4vw -1vw rgba(0, 0, 0, 0.8);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        p {
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+
+        canvas {
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], button, select {
+            font-size: 1.2em;
+            padding: 10px;
+            width: 250px;
+            margin: 10px auto;
+            display: block;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .score {
+            font-size: 1.5em;
+            margin-top: 10px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1>Graph Interpretation and Analysis Game</h1>
+    <label for="difficultySelect">Select Difficulty:</label>
+    <select id="difficultySelect">
+        <option value="simple">Simple</option>
+        <option value="computative">Computative</option>
+    </select>
+    <canvas id="chartCanvas"></canvas>
+    <p id="question" class="hidden"></p>
+    <input type="text" id="userAnswer" placeholder="Your answer" class="hidden">
+    <button id="submitAnswer" class="hidden">Submit</button>
+    <button id="tryAgain" class="hidden">Try Again</button>
+    <p id="resultMessage" class="hidden"></p>
+    <p class="score hidden">Score: <span id="score">0</span>/10</p>
+</div>
+
+<script>
+    const questionEl = document.getElementById('question');
+    const userAnswerEl = document.getElementById('userAnswer');
+    const submitAnswerBtn = document.getElementById('submitAnswer');
+    const tryAgainBtn = document.getElementById('tryAgain');
+    const resultMessage = document.getElementById('resultMessage');
+    const scoreElement = document.getElementById('score');
+    const chartCanvas = document.getElementById('chartCanvas').getContext('2d');
+    const difficultySelect = document.getElementById('difficultySelect');
+
+    let chart;
+    let currentQuestion;
+    let score = 0;
+
+    // Utility function to generate random integers
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // Utility function to randomly select an element from an array
+    function getRandomElement(array) {
+        return array[Math.floor(Math.random() * array.length)];
+    }
+
+    // Function to generate a random chart and related questions
+    function generateRandomChartAndQuestion() {
+        const chartType = getRandomElement(['bar', 'line', 'pie', 'radar', 'stackedBar']);
+        let chartData = {};
+        switch (chartType) {
+            case 'bar':
+                chartData = generateBarChart();
+                break;
+            case 'line':
+                chartData = generateLineChart();
+                break;
+            case 'pie':
+                chartData = generatePieChart();
+                break;
+            case 'radar':
+                chartData = generateRadarChart();
+                break;
+            case 'stackedBar':
+                chartData = generateStackedBarChart();
+                break;
+        }
+
+        displayChart(chartData);
+        const difficulty = difficultySelect.value;
+        currentQuestion = chartData.questions[difficulty][getRandomInt(0, chartData.questions[difficulty].length - 1)];
+        questionEl.textContent = currentQuestion.question;
+    }
+
+    // Function to generate a bar chart
+    function generateBarChart() {
+        const categories = ["A", "B", "C", "D"];
+        const values = categories.map(() => getRandomInt(50, 150));
+
+        return {
+            type: 'bar',
+            data: {
+                labels: categories,
+                datasets: [{
+                    label: 'Category Values',
+                    data: values,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            questions: {
+                simple: [
+                    { question: `What is the value of category ${categories[0]}?`, answer: values[0].toString() },
+                    { question: `Which category has the highest value?`, answer: categories[values.indexOf(Math.max(...values))] }
+                ],
+                computative: [
+                    { question: `What is the total value across all categories?`, answer: values.reduce((a, b) => a + b, 0).toString() },
+                    { question: `What is the average value across all categories?`, answer: (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2) }
+                ]
+            }
+        };
+    }
+
+    // Function to generate a line chart
+    function generateLineChart() {
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+        const values = months.map(() => getRandomInt(50, 150));
+
+        return {
+            type: 'line',
+            data: {
+                labels: months,
+                datasets: [{
+                    label: 'Monthly Sales',
+                    data: values,
+                    fill: false,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    tension: 0.1
+                }]
+            },
+            questions: {
+                simple: [
+                    { question: `What were the sales in ${months[2]}?`, answer: values[2].toString() },
+                    { question: `In which month were the sales the highest?`, answer: months[values.indexOf(Math.max(...values))] }
+                ],
+                computative: [
+                    { question: `What is the total sales across all months?`, answer: values.reduce((a, b) => a + b, 0).toString() },
+                    { question: `What is the average sales across all months?`, answer: (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2) }
+                ]
+            }
+        };
+    }
+
+    // Function to generate a pie chart
+    function generatePieChart() {
+        const segments = ["Segment 1", "Segment 2", "Segment 3", "Segment 4"];
+        const values = segments.map(() => getRandomInt(20, 50));
+
+        return {
+            type: 'pie',
+            data: {
+                labels: segments,
+                datasets: [{
+                    data: values,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.6)',
+                        'rgba(54, 162, 235, 0.6)',
+                        'rgba(255, 206, 86, 0.6)',
+                        'rgba(75, 192, 192, 0.6)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            questions: {
+                simple: [
+                    { question: `What is the value of ${segments[0]}?`, answer: values[0].toString() },
+                    { question: `Which segment has the largest share?`, answer: segments[values.indexOf(Math.max(...values))] }
+                ],
+                computative: [
+                    { question: `What is the total value across all segments?`, answer: values.reduce((a, b) => a + b, 0).toString() },
+                    { question: `What percentage of the total does ${segments[0]} represent?`, answer: ((values[0] / values.reduce((a, b) => a + b, 0)) * 100).toFixed(2) }
+                ]
+            }
+        };
+    }
+
+    // Function to generate a radar chart
+    function generateRadarChart() {
+        const metrics = ["Speed", "Power", "Skill", "Endurance", "Agility"];
+        const values = metrics.map(() => getRandomInt(50, 100));
+
+        return {
+            type: 'radar',
+            data: {
+                labels: metrics,
+                datasets: [{
+                    label: 'Athlete Performance',
+                    data: values,
+                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            questions: {
+                simple: [
+                    { question: `What is the value for ${metrics[0]}?`, answer: values[0].toString() },
+                    { question: `Which metric has the highest value?`, answer: metrics[values.indexOf(Math.max(...values))] }
+                ],
+                computative: [
+                    { question: `What is the total value across all metrics?`, answer: values.reduce((a, b) => a + b, 0).toString() },
+                    { question: `What is the average value across all metrics?`, answer: (values.reduce((a, b) => a + b, 0) / values.length).toFixed(2) }
+                ]
+            }
+        };
+    }
+
+    // Function to generate a stacked bar chart
+    function generateStackedBarChart() {
+        const categories = ["A", "B", "C", "D"];
+        const dataset1 = categories.map(() => getRandomInt(20, 70));
+        const dataset2 = categories.map(() => getRandomInt(30, 80));
+
+        return {
+            type: 'bar',
+            data: {
+                labels: categories,
+                datasets: [
+                    {
+                        label: 'Dataset 1',
+                        data: dataset1,
+                        backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Dataset 2',
+                        data: dataset2,
+                        backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                scales: {
+                    x: {
+                        stacked: true
+                    },
+                    y: {
+                        stacked: true
+                    }
+                }
+            },
+            questions: {
+                simple: [
+                    { question: `What is the value of category ${categories[0]} in Dataset 1?`, answer: dataset1[0].toString() },
+                    { question: `Which category has the highest total value across both datasets?`, answer: categories[dataset1.map((v, i) => v + dataset2[i]).indexOf(Math.max(...dataset1.map((v, i) => v + dataset2[i])))] }
+                ],
+                computative: [
+                    { question: `What is the total value across all categories in Dataset 1?`, answer: dataset1.reduce((a, b) => a + b, 0).toString() },
+                    { question: `What is the total combined value across all categories?`, answer: dataset1.map((v, i) => v + dataset2[i]).reduce((a, b) => a + b, 0).toString() }
+                ]
+            }
+        };
+    }
+
+    // Function to display the chart and set the question
+    function displayChart(chartData) {
+        if (chart) {
+            chart.destroy(); // Destroy the previous chart
+        }
+        chart = new Chart(chartCanvas, {
+            type: chartData.type,
+            data: chartData.data,
+            options: chartData.options || {}
+        });
+    }
+
+    // Initialize with a random chart and question
+    generateRandomChartAndQuestion();
+    document.querySelectorAll('.hidden').forEach(el => el.classList.remove('hidden'));
+
+    // Validate user input
+    function validateAnswer() {
+        const userAnswer = userAnswerEl.value.trim();
+
+        if (userAnswer === currentQuestion.answer) {
+            score++;
+            resultMessage.textContent = `Correct!`;
+            resultMessage.style.color = "green";
+        } else {
+            resultMessage.textContent = `Incorrect! The correct answer was ${currentQuestion.answer}.`;
+            resultMessage.style.color = "red";
+        }
+
+        scoreElement.textContent = score;
+        submitAnswerBtn.classList.add('hidden');
+        tryAgainBtn.classList.remove('hidden');
+
+        if (score === 10) {
+            alert("Congratulations! You've answered 10 questions correctly!");
+            score = 0;
+            scoreElement.textContent = score;
+        }
+    }
+
+    // Reset the game for another round
+    function resetGame() {
+        userAnswerEl.value = "";
+        resultMessage.textContent = "";
+        submitAnswerBtn.classList.remove('hidden');
+        tryAgainBtn.classList.add('hidden');
+        generateRandomChartAndQuestion();
+    }
+
+    // Event listeners
+    submitAnswerBtn.addEventListener('click', validateAnswer);
+    tryAgainBtn.addEventListener('click', resetGame);
+</script>
+</body>
+</html>
