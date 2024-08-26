@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Sorting Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        input[type="number"], button, select {
+            font-size: 1.5em;
+            padding: 10px;
+            margin: 5px;
+            width: calc(50% - 10px);
+        }
+        .number-list {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            padding: 0;
+            list-style: none;
+        }
+        .number-list li {
+            background-color: #007BFF;
+            color: white;
+            padding: 15px;
+            margin: 5px;
+            cursor: pointer;
+            font-size: 1.5em;
+            border-radius: 5px;
+        }
+        .result-container {
+            margin-top: 20px;
+            display: none;
+        }
+        .result-container p {
+            font-size: 1.5em;
+        }
+        .sortable-placeholder {
+            background-color: #e0e0e0;
+            height: 50px;
+            width: 60px;
+            margin: 5px;
+            border-radius: 5px;
+            border: 2px dashed #ccc;
+        }
+        #submitBtn {
+            margin-top: 20px;
+            font-size: 1.5em;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Number Sorting Game</h1>
+    <form id="configForm">
+        <div class="form-group">
+            <label for="rangeMin">Min number:</label><br>
+            <input type="number" id="rangeMin" placeholder="Min" required>
+        </div>
+        <div class="form-group">
+            <label for="rangeMax">Max number:</label><br>
+            <input type="number" id="rangeMax" placeholder="Max" required>
+        </div>
+        <div class="form-group">
+            <label for="quantity">Number of numbers:</label><br>
+            <input type="number" id="quantity" placeholder="Quantity" min="2" required>
+        </div>
+        <div class="form-group">
+            <label for="continuous">Continuous numbers:</label>
+            <input type="checkbox" id="continuous">
+        </div>
+        <button type="submit">Start</button>
+    </form>
+
+    <ul id="numberList" class="number-list"></ul>
+
+    <button id="submitBtn" class="hidden">Submit</button>
+
+    <div id="resultContainer" class="result-container">
+        <h2>Your Results</h2>
+        <p id="resultMessage"></p>
+        <button id="retryButton">Retry</button>
+    </div>
+</div>
+
+<script>
+    const configForm = document.getElementById('configForm');
+    const numberList = document.getElementById('numberList');
+    const resultContainer = document.getElementById('resultContainer');
+    const resultMessage = document.getElementById('resultMessage');
+    const retryButton = document.getElementById('retryButton');
+    const submitBtn = document.getElementById('submitBtn');
+
+    let correctOrder = [];
+
+    configForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        startGame();
+    });
+
+    retryButton.addEventListener('click', function () {
+        resultContainer.style.display = 'none';
+        numberList.innerHTML = '';
+        configForm.style.display = 'block';
+        submitBtn.classList.add('hidden');
+    });
+
+    function startGame() {
+        const rangeMin = parseInt(document.getElementById('rangeMin').value);
+        const rangeMax = parseInt(document.getElementById('rangeMax').value);
+        const quantity = parseInt(document.getElementById('quantity').value);
+        const isContinuous = document.getElementById('continuous').checked;
+
+        generateNumbers(rangeMin, rangeMax, quantity, isContinuous);
+        createDraggableList();
+        configForm.style.display = 'none';
+        submitBtn.classList.remove('hidden');
+    }
+
+    function generateNumbers(min, max, quantity, continuous) {
+        const numbers = [];
+        if (continuous) {
+            // const step = Math.floor((max - min) / (quantity - 1));
+            const step = 1;
+            for (let i = 0; i < quantity; i++) {
+                numbers.push(min + i * step);
+            }
+        } else {
+            while (numbers.length < quantity) {
+                const num = Math.floor(Math.random() * (max - min + 1)) + min;
+                if (!numbers.includes(num)) {
+                    numbers.push(num);
+                }
+            }
+        }
+
+        correctOrder = [...numbers].sort((a, b) => a - b);
+        shuffleArray(numbers);
+        displayNumbers(numbers);
+    }
+
+    function displayNumbers(numbers) {
+        numberList.innerHTML = '';
+        numbers.forEach(num => {
+            const li = document.createElement('li');
+            li.textContent = num;
+            li.setAttribute('draggable', 'true');
+            li.classList.add('draggable');
+            numberList.appendChild(li);
+        });
+
+        addDragAndDropListeners();
+    }
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
+
+    function addDragAndDropListeners() {
+        const draggables = document.querySelectorAll('.draggable');
+        const listItems = document.querySelectorAll('.number-list li');
+
+        let draggedItem = null;
+
+        draggables.forEach(draggable => {
+            draggable.addEventListener('dragstart', function () {
+                draggedItem = this;
+                setTimeout(() => this.style.display = 'none', 0);
+            });
+
+            draggable.addEventListener('dragend', function () {
+                setTimeout(() => {
+                    this.style.display = 'block';
+                    draggedItem = null;
+                }, 0);
+            });
+        });
+
+        listItems.forEach(listItem => {
+            listItem.addEventListener('dragover', function (e) {
+                e.preventDefault();
+            });
+
+            listItem.addEventListener('dragenter', function (e) {
+                e.preventDefault();
+                this.style.border = '2px dashed #000';
+            });
+
+            listItem.addEventListener('dragleave', function () {
+                this.style.border = 'none';
+            });
+
+            listItem.addEventListener('drop', function () {
+                this.style.border = 'none';
+                if (draggedItem) {
+                    numberList.insertBefore(draggedItem, this.nextSibling);
+                }
+            });
+        });
+    }
+
+    submitBtn.addEventListener('click', function () {
+        checkResult();
+    });
+
+    function checkResult() {
+        const items = [...numberList.children];
+        const currentOrder = items.map(item => parseInt(item.textContent));
+
+        if (arraysEqual(currentOrder, correctOrder)) {
+            resultMessage.textContent = 'Correct! You sorted the numbers correctly.';
+        } else {
+            resultMessage.textContent = 'Incorrect! Please try again.';
+        }
+
+        resultContainer.style.display = 'block';
+    }
+
+    function arraysEqual(arr1, arr2) {
+        return arr1.length === arr2.length && arr1.every((value, index) => value === arr2[index]);
+    }
+</script>
+</body>
+</html>
