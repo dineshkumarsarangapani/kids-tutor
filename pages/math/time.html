@@ -3,44 +3,224 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Time Practice</title>
-    <link rel="stylesheet" href="../css/time.css">
+    <title>Time Practice Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        input[type="number"], button, select {
+            font-size: 1.2em;
+            padding: 10px;
+            margin: 5px;
+            width: calc(50% - 10px);
+        }
+        .clock-container {
+            margin-top: 20px;
+            display: none;
+        }
+        .clock-container p {
+            font-size: 1.5em;
+        }
+        .result-container {
+            margin-top: 20px;
+            display: none;
+        }
+        #resultMessage {
+            font-size: 1.5em;
+            color: green;
+        }
+        #errorMessage {
+            font-size: 1.5em;
+            color: red;
+        }
+    </style>
 </head>
 <body>
 <div class="container">
-    <h1>Time Practice</h1>
+    <h1>Time Practice Game</h1>
+    <form id="configForm">
+        <div class="form-group">
+            <label for="timeFormat">Choose Time Format:</label><br>
+            <select id="timeFormat" required>
+                <option value="12">12-Hour Clock</option>
+                <option value="24">24-Hour Clock</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="problemType">Choose Problem Type:</label><br>
+            <select id="problemType" required>
+                <option value="difference">Calculating Time Difference</option>
+            </select>
+        </div>
+        <button type="submit">Start</button>
+    </form>
 
-    <div class="info">
-        <h2>Analog Clock Reading Practice</h2>
-        <p>Practice reading times from analog clocks. You will be shown a series of clocks, and you need to input the time shown on each clock.</p>
-        <button id="startReading">Start Reading Practice</button>
+    <!-- Clock Reading and Time Difference -->
+    <div id="clockContainer" class="clock-container">
+        <p id="clockProblem"></p>
+        <div id="clockDisplay"></div>
+        <div id="timeDifferenceInputs" style="display: none;">
+            <label for="hourInput">Hours:</label>
+            <input type="number" id="hourInput" min="0" placeholder="Hours">
+            <label for="minuteInput">Minutes:</label>
+            <input type="number" id="minuteInput" min="0" max="59" placeholder="Minutes">
+        </div>
+        <button id="submitAnswer">Submit</button>
+        <p id="resultMessage"></p>
+        <p id="errorMessage"></p>
     </div>
 
-    <div class="info">
-        <h2>Analog Clock Setting Practice</h2>
-        <p>Practice setting times on analog clocks. You will be given a series of times to set on the clock face.</p>
-        <button id="startSetting">Start Setting Practice</button>
-    </div>
-
-    <div id="practiceSection" class="hidden">
-        <div id="clockContainer"></div>
-        <div id="inputContainer" class="hidden">
-            <input type="text" id="timeInput" placeholder="Enter time (e.g., 3:45)">
-            <button id="submitAnswer">Submit</button>
-            <a href="../../index.html">Back to Index</a>
-        </div>
-        <div id="resultContainer" class="hidden">
-            <p id="score"></p>
-            <button id="nextQuestion">Next Question</button>
-            <a href="../../index.html">Back to Index</a>
-        </div>
+    <div id="resultContainer" class="result-container">
+        <h2>Your Results</h2>
+        <button id="retryButton">Retry</button>
     </div>
 </div>
 
-<footer>
-    <p>&copy; 2024 Dinesh Kumar S. All rights reserved.</p>
-</footer>
+<script>
+    const configForm = document.getElementById('configForm');
+    const clockContainer = document.getElementById('clockContainer');
+    const clockProblem = document.getElementById('clockProblem');
+    const clockDisplay = document.getElementById('clockDisplay');
+    const timeDifferenceInputs = document.getElementById('timeDifferenceInputs');
+    const submitAnswerBtn = document.getElementById('submitAnswer');
+    const resultMessage = document.getElementById('resultMessage');
+    const errorMessage = document.getElementById('errorMessage');
+    const retryButton = document.getElementById('retryButton');
 
-<script src="../scripts/time.js"></script>
+    let currentTime;
+    let correctTimeDifference;
+
+    configForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+        startGame();
+    });
+
+    retryButton.addEventListener('click', function () {
+        resetGame();
+    });
+
+    function startGame() {
+        const timeFormat = document.getElementById('timeFormat').value;
+        const problemType = document.getElementById('problemType').value;
+
+        if (problemType === 'reading') {
+            generateReadingProblem(timeFormat);
+        } else if (problemType === 'difference') {
+            generateTimeDifferenceProblem(timeFormat);
+        }
+
+        configForm.style.display = 'none';
+        clockContainer.style.display = 'block';
+    }
+
+    function generateReadingProblem(timeFormat) {
+        currentTime = generateRandomTime(timeFormat);
+        displayClock(currentTime, timeFormat);
+
+        clockProblem.textContent = 'What is the time shown on the clock?';
+        timeDifferenceInputs.style.display = 'none';
+    }
+
+    function generateTimeDifferenceProblem(timeFormat) {
+        const startTime = generateRandomTime(timeFormat);
+        const endTime = generateRandomTime(timeFormat);
+
+        displayClock(startTime, timeFormat, "Start Time");
+        displayClock(endTime, timeFormat, "End Time");
+
+        correctTimeDifference = calculateTimeDifference(startTime, endTime);
+
+        clockProblem.textContent = 'Calculate the time difference between the two clocks.';
+        timeDifferenceInputs.style.display = 'block';
+    }
+
+    function displayClock(time, format, label = "Clock") {
+        let displayTime;
+        if (format === '12') {
+            const hours = time.hours % 12 || 12;
+            const suffix = time.hours >= 12 ? 'PM' : 'AM';
+            displayTime = `${hours.toString().padStart(2, '0')}:${time.minutes.toString().padStart(2, '0')} ${suffix}`;
+        } else {
+            displayTime = `${time.hours.toString().padStart(2, '0')}:${time.minutes.toString().padStart(2, '0')}`;
+        }
+        const clockHtml = `<p>${label}: ${displayTime}</p>`;
+        clockDisplay.innerHTML += clockHtml;
+    }
+
+    function generateRandomTime(format) {
+        const hours = format === '12' ? Math.floor(Math.random() * 12) : Math.floor(Math.random() * 24);
+        const minutes = Math.floor(Math.random() * 60);
+        return { hours, minutes };
+    }
+
+    function calculateTimeDifference(startTime, endTime) {
+        let startMinutes = startTime.hours * 60 + startTime.minutes;
+        let endMinutes = endTime.hours * 60 + endTime.minutes;
+
+        let differenceInMinutes = Math.abs(endMinutes - startMinutes);
+        const hours = Math.floor(differenceInMinutes / 60);
+        const minutes = differenceInMinutes % 60;
+
+        return { hours, minutes };
+    }
+
+    submitAnswerBtn.addEventListener('click', function () {
+        const problemType = document.getElementById('problemType').value;
+
+        if (problemType === 'reading') {
+            const userHour = parseInt(document.getElementById('hourInput').value);
+            const userMinute = parseInt(document.getElementById('minuteInput').value);
+
+            if (userHour === currentTime.hours && userMinute === currentTime.minutes) {
+                resultMessage.textContent = 'Correct! You read the time correctly.';
+                errorMessage.textContent = '';
+            } else {
+                errorMessage.textContent = `Incorrect! The correct time was ${currentTime.hours}:${currentTime.minutes}.`;
+                resultMessage.textContent = '';
+            }
+        } else if (problemType === 'difference') {
+            const userHour = parseInt(document.getElementById('hourInput').value);
+            const userMinute = parseInt(document.getElementById('minuteInput').value);
+
+            if (userHour === correctTimeDifference.hours && userMinute === correctTimeDifference.minutes) {
+                resultMessage.textContent = 'Correct! You calculated the time difference correctly.';
+                errorMessage.textContent = '';
+            } else {
+                errorMessage.textContent = `Incorrect! The correct time difference was ${correctTimeDifference.hours} hours and ${correctTimeDifference.minutes} minutes.`;
+                resultMessage.textContent = '';
+            }
+        }
+    });
+
+    function resetGame() {
+        clockContainer.style.display = 'none';
+        configForm.style.display = 'block';
+        resultMessage.textContent = '';
+        errorMessage.textContent = '';
+        clockDisplay.innerHTML = '';
+        document.getElementById('hourInput').value = '';
+        document.getElementById('minuteInput').value = '';
+    }
+</script>
 </body>
 </html>

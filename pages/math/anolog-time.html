@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clock Time Guessing Game</title>
+    <style>
+        @import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@700&display=swap");
+
+        :root {
+            --hand-width: 0.5rem;
+            --sec-hand: 6rem;
+            --min-hand: calc(var(--sec-hand) * 0.85);
+            --hour-hand: calc(var(--sec-hand) * 0.6);
+            --clr-red: hsl(11, 79%, 49%);
+            --clr-dark: hsl(0, 0%, 19%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: "Open Sans", sans-serif;
+        }
+
+        .clock-body {
+            height: 15rem;
+            width: 15rem;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: inset 0px 0px 30px #a6a9b4, 0 0 0 15px #333;
+        }
+
+        .disc {
+            width: 0.5rem;
+            height: 0.5rem;
+            background: var(--clr-red);
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            z-index: 2;
+            transform: translateX(-50%) translateY(-50%);
+        }
+
+        .disc-bottom {
+            width: 0.9rem;
+            height: 0.9rem;
+            background: #333;
+            z-index: 1;
+        }
+
+        .hand {
+            background: var(--clr-dark);
+            border-radius: 15px 15px 0 0;
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: bottom;
+            transition: all 0.05s;
+            transition-timing-function: cubic-bezier(0.1, 2.7, 0.58, 1);
+        }
+
+        .second {
+            background: var(--clr-red);
+            width: 0.1rem;
+            height: var(--sec-hand);
+            transform: translateX(-50%) rotate(0deg);
+            z-index: 2;
+        }
+
+        .second::before {
+            content: "";
+            height: 1.5rem;
+            width: 0.1rem;
+            background: var(--clr-red);
+            position: absolute;
+            top: 100%;
+        }
+
+        .second::after {
+            content: "";
+            height: 1.5rem;
+            width: 0.3rem;
+            background: var(--clr-red);
+            position: absolute;
+            top: 120%;
+            transform: translateX(-35%);
+        }
+
+        .minute {
+            height: var(--min-hand);
+            width: 0.3rem;
+            transform: translateX(-50%) rotate(0deg);
+            background: var(--clr-dark);
+        }
+
+        .minute::after {
+            content: "";
+            height: 1.2rem;
+            width: 0.3rem;
+            background: var(--clr-dark);
+            position: absolute;
+            top: 100%;
+            border-radius: 0px 0px 10px 10px;
+        }
+
+        .hour {
+            height: var(--hour-hand);
+            width: 0.4rem;
+            background: var(--clr-dark);
+            transform: translateX(-50%) rotate(0deg);
+            z-index: -1;
+        }
+
+        .hour::after {
+            content: "";
+            height: 1.2rem;
+            width: 0.4rem;
+            background: var(--clr-dark);
+            position: absolute;
+            top: 100%;
+            border-radius: 0px 0px 10px 10px;
+        }
+
+        .hour-number {
+            position: absolute;
+            left: 50%;
+            height: 7.5rem;
+            transform-origin: bottom;
+            padding: 1rem;
+            color: var(--clr-dark);
+            user-select: none;
+            font-size: 1.4rem;
+        }
+
+        .minute-bar {
+            position: absolute;
+            left: 50%;
+            width: 1rem;
+            height: 7.5rem;
+            transform-origin: bottom;
+            transform: rotate(20deg) translateX(-50%);
+        }
+
+        .hour-number::before,
+        .minute-bar::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            right: 50%;
+            top: 0px;
+            border-radius: 0px 0px 15px 15px;
+            transform: translateX(-50%);
+            background: var(--clr-dark);
+        }
+
+        .hour-number::before {
+            height: 10px;
+            width: 4px;
+        }
+
+        .minute-bar::before {
+            height: 6px;
+            width: 2px;
+        }
+
+        input[type="text"] {
+            font-size: 1.2em;
+            padding: 10px;
+            width: 200px;
+            margin: 10px auto;
+            display: block;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            margin-top: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .score {
+            font-size: 1.5em;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<h1>Clock Time Guessing Game</h1>
+</br>
+<div class="clock-body">
+    <div class="hours"></div>
+    <div class="disc disc-top"></div>
+    <div class="disc disc-bottom"></div>
+    <div class="hand second"></div>
+    <div class="hand minute"></div>
+    <div class="hand hour"></div>
+</div>
+</br>
+</br>
+<p>Enter the time you see on the clock (e.g., 03:45)</p>
+<input type="text" id="userTime" placeholder="HH:MM">
+<button id="submitAnswer">Submit</button>
+<button id="tryAgain" class="hidden">Try Again</button>
+<p id="resultMessage"></p>
+<p class="score">Score: <span id="score">0</span>/10</p>
+
+<script>
+    const time = document.querySelector(".hours");
+    const secHand = document.querySelector(".second");
+    const minHand = document.querySelector(".minute");
+    const hourHand = document.querySelector(".hour");
+    const submitAnswerBtn = document.getElementById('submitAnswer');
+    const tryAgainBtn = document.getElementById('tryAgain');
+    const resultMessage = document.getElementById('resultMessage');
+    const scoreElement = document.getElementById('score');
+    const userTimeInput = document.getElementById('userTime');
+
+    let currentTime;
+    let score = 0;
+
+    // Generate hour numbers and minute bars
+    for (let i = 1; i <= 60; i++) {
+        if (i % 5 === 0) {
+            time.innerHTML += "<div class='hour-number'><div>" + (i / 5) + "</div></div>";
+            const hours = document.getElementsByClassName("hour-number");
+            hours[hours.length - 1].style.transform = `translateX(-50%) rotate(${i * 6}deg)`;
+            hours[hours.length - 1].firstChild.style.transform = `rotate(${i * -6}deg)`;
+        } else {
+            time.innerHTML += "<div class='minute-bar'></div>";
+            const bars = document.getElementsByClassName("minute-bar");
+            bars[bars.length - 1].style.transform = `translateX(-50%) rotate(${i * 6}deg)`;
+        }
+    }
+
+    // Function to generate random time and display on clock
+    function generateRandomTime() {
+        const hours = Math.floor(Math.random() * 12); // 12-hour format
+        const minutes = Math.floor(Math.random() * 60);
+        currentTime = { hours, minutes };
+
+        // Update clock hands
+        const hDeg = hours * 30 + minutes * 0.5;
+        const mDeg = minutes * 6;
+
+        hourHand.style.transform = `translateX(-50%) rotate(${hDeg}deg)`;
+        minHand.style.transform = `translateX(-50%) rotate(${mDeg}deg)`;
+    }
+
+    // Initialize clock with random time
+    generateRandomTime();
+
+    // Validate user input
+    function validateTime() {
+        const userTime = userTimeInput.value;
+        const userTimeSplit = userTime.split(':');
+
+        if (userTimeSplit.length !== 2) {
+            resultMessage.textContent = "Please enter time in the format HH:MM";
+            return;
+        }
+
+        const userHour = parseInt(userTimeSplit[0], 10);
+        const userMinute = parseInt(userTimeSplit[1], 10);
+
+        if (userHour === currentTime.hours && userMinute === currentTime.minutes) {
+            score++;
+            resultMessage.textContent = `Correct! The time was ${formatTime(currentTime.hours, currentTime.minutes)}.`;
+            resultMessage.style.color = "green";
+        } else {
+            resultMessage.textContent = `Incorrect! The correct time was ${formatTime(currentTime.hours, currentTime.minutes)}.`;
+            resultMessage.style.color = "red";
+        }
+
+        scoreElement.textContent = score;
+        submitAnswerBtn.classList.add('hidden');
+        tryAgainBtn.classList.remove('hidden');
+    }
+
+    // Format time as HH:MM
+    function formatTime(hour, minute) {
+        const formattedHour = hour.toString().padStart(2, '0');
+        const formattedMinute = minute.toString().padStart(2, '0');
+        return `${formattedHour}:${formattedMinute}`;
+    }
+
+    // Reset the game for another round
+    function resetGame() {
+        userTimeInput.value = "";
+        resultMessage.textContent = "";
+        submitAnswerBtn.classList.remove('hidden');
+        tryAgainBtn.classList.add('hidden');
+        generateRandomTime();
+
+        if (score === 10) {
+            alert("Congratulations! You reached a score of 10!");
+            score = 0;
+            scoreElement.textContent = score;
+        }
+    }
+
+    // Event listeners
+    submitAnswerBtn.addEventListener('click', validateTime);
+    tryAgainBtn.addEventListener('click', resetGame);
+</script>
+</body>
+</html>
