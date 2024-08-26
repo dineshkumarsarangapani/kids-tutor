@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function displayQuestion(index) {
         const question = questions[index];
-        document.getElementById('question').textContent = `${question.num1} + ${question.num2} = ?`;
+        document.getElementById('question').textContent = `${question.num1} × ${question.num2} = ?`;
         document.getElementById('answerInput').value = '';
         document.getElementById('answerInput').focus();
     }
@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const question = questions[currentQuestion];
         question.userAnswer = userAnswer;
 
-        if (userAnswer === question.num1 + question.num2) {
+        if (userAnswer === question.num1 * question.num2) {
             question.isCorrect = true;
             score++;
         } else {
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', function() {
         newSubmission.className = 'scroll-animation';
 
         const correctSymbol = question.isCorrect ? '✔️' : '✖️';
-        newSubmission.textContent = `${question.num1} + ${question.num2} = ${question.userAnswer} ${correctSymbol}`;
+        newSubmission.textContent = `${question.num1} × ${question.num2} = ${question.userAnswer} ${correctSymbol}`;
 
         submittedValuesContainer.appendChild(newSubmission);
     }
@@ -101,14 +101,14 @@ document.addEventListener('DOMContentLoaded', function() {
         questions.forEach((question, index) => {
             const answerResult = document.createElement('p');
             const correctSymbol = question.isCorrect ? '✔️' : '✖️';
-            answerResult.textContent = `Question ${index + 1}: ${question.num1} + ${question.num2} = ${question.userAnswer} ${correctSymbol}`;
+            answerResult.textContent = `Question ${index + 1}: ${question.num1} × ${question.num2} = ${question.userAnswer} ${correctSymbol}`;
             submittedAnswersContainer.appendChild(answerResult);
         });
     }
 
     document.getElementById('exportResults').addEventListener('click', function() {
         const results = questions.map((q, index) =>
-            `Question ${index + 1}: ${q.num1} + ${q.num2} = ${q.num1 + q.num2}, Your Answer: ${q.userAnswer}, ${q.isCorrect ? '✔️ Correct' : '✖️ Incorrect'}`).join('\n');
+            `Question ${index + 1}: ${q.num1} × ${q.num2} = ${q.num1 * q.num2}, Your Answer: ${q.userAnswer}, ${q.isCorrect ? '✔️ Correct' : '✖️ Incorrect'}`).join('\n');
 
         const blob = new Blob([results], { type: 'text/plain' });
         const link = document.createElement('a');
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('exportPDF').addEventListener('click', function() {
         const pdfContent = questions.map((q, index) =>
-            `Question ${index + 1}: ${q.num1} + ${q.num2} = ?`).join('\n');
+            `Question ${index + 1}: ${q.num1} × ${q.num2} = ?`).join('\n');
 
         const blob = new Blob([pdfContent], { type: 'application/pdf' });
         const link = document.createElement('a');
