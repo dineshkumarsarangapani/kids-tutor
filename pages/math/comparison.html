@@ -224,7 +224,7 @@
 
         scoreElem.textContent = `Score: ${score}`;
         submittedValuesElem.innerHTML += `<p>${num1} ${selectedOperator} ${num2} ${isCorrect ? '✔️' : '❌'}</p>`;
-
+        submittedValuesElem.scrollTop = submittedValuesElem.scrollHeight;
         currentQuestionIndex++;
         displayQuestion();
     });
