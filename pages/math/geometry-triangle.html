@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Triangle Problem Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2vw 4vw -1vw rgba(0, 0, 0, 0.8);
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        p {
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+
+        input[type="text"], button {
+            font-size: 1.2em;
+            padding: 10px;
+            width: 250px;
+            margin: 10px auto;
+            display: block;
+        }
+
+        canvas {
+            border: 1px solid black;
+            margin: 20px 0;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .score {
+            font-size: 1.5em;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Triangle Problem Game</h1>
+    <canvas id="triangleCanvas" width="300" height="300"></canvas>
+    <p id="question"></p>
+    <input type="text" id="userAnswer" placeholder="Your answer">
+    <button id="submitAnswer">Submit</button>
+    <button id="tryAgain" class="hidden">Try Again</button>
+    <p id="resultMessage"></p>
+    <p class="score">Score: <span id="score">0</span>/10</p>
+</div>
+
+<script>
+    const questionEl = document.getElementById('question');
+    const userAnswerEl = document.getElementById('userAnswer');
+    const submitAnswerBtn = document.getElementById('submitAnswer');
+    const tryAgainBtn = document.getElementById('tryAgain');
+    const resultMessage = document.getElementById('resultMessage');
+    const scoreElement = document.getElementById('score');
+    const canvas = document.getElementById('triangleCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let currentQuestion;
+    let score = 0;
+
+    // Function to generate a random problem dynamically
+    function generateRandomProblem() {
+        const randomProblemType = Math.floor(Math.random() * 5);
+        let base, height, side1, side2, hypotenuse, angle1, angle2, perimeter, area;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear previous drawing
+
+        switch (randomProblemType) {
+            // Dynamic version: Find the missing side of a right triangle using Pythagoras theorem
+            case 0:
+                base = Math.floor(Math.random() * 10) + 3;
+                height = Math.floor(Math.random() * 10) + 3;
+                hypotenuse = Math.sqrt(base ** 2 + height ** 2).toFixed(2);
+                currentQuestion = {
+                    question: `A right triangle has sides ${base} and ${height} units long. What is the length of the hypotenuse?`,
+                    answer: parseFloat(hypotenuse)
+                };
+                drawRightTriangle(base, height);
+                break;
+
+            // Dynamic version: Find the missing angle in a triangle
+            case 1:
+                angle1 = Math.floor(Math.random() * 60) + 30;
+                angle2 = Math.floor(Math.random() * (90 - angle1));
+                currentQuestion = {
+                    question: `A triangle has angles ${angle1}° and ${angle2}°. What is the missing angle?`,
+                    answer: 180 - angle1 - angle2
+                };
+                drawTriangleWithAngles(angle1, angle2);
+                break;
+
+            // Dynamic version: Find the perimeter of a triangle
+            case 2:
+                side1 = Math.floor(Math.random() * 10) + 5;
+                side2 = Math.floor(Math.random() * 10) + 5;
+                side3 = Math.floor(Math.random() * 10) + 5;
+                perimeter = side1 + side2 + side3;
+                currentQuestion = {
+                    question: `A triangle has sides of length ${side1}, ${side2}, and ${side3} units. What is the perimeter?`,
+                    answer: perimeter
+                };
+                drawTriangle(side1, side2, side3);
+                break;
+
+            // Dynamic version: Calculate the area of a right triangle
+            case 3:
+                base = Math.floor(Math.random() * 10) + 5;
+                height = Math.floor(Math.random() * 10) + 5;
+                area = 0.5 * base * height;
+                currentQuestion = {
+                    question: `What is the area of a triangle with a base of ${base} units and a height of ${height} units?`,
+                    answer: parseFloat(area.toFixed(2))
+                };
+                drawRightTriangle(base, height);
+                break;
+
+            // Dynamic version: Find the missing side using Pythagoras (different values)
+            case 4:
+                base = Math.floor(Math.random() * 10) + 5;
+                height = Math.floor(Math.random() * 10) + 5;
+                hypotenuse = Math.sqrt(base ** 2 + height ** 2).toFixed(2);
+                currentQuestion = {
+                    question: `A right triangle has sides ${base} and ${height} units long. What is the length of the hypotenuse?`,
+                    answer: parseFloat(hypotenuse)
+                };
+                drawRightTriangle(base, height);
+                break;
+        }
+
+        questionEl.textContent = currentQuestion.question;
+    }
+
+    // Function to draw a right triangle on the canvas
+    function drawRightTriangle(base, height) {
+        ctx.beginPath();
+        ctx.moveTo(50, 250); // Bottom left corner
+        ctx.lineTo(50 + base * 20, 250); // Bottom right corner
+        ctx.lineTo(50, 250 - height * 20); // Top corner
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+    // Function to draw a triangle based on side lengths
+    function drawTriangle(side1, side2, side3) {
+        const height = 100;
+        const base = side1;
+
+        ctx.beginPath();
+        ctx.moveTo(50, 250); // Bottom left corner
+        ctx.lineTo(50 + base * 15, 250); // Bottom right corner
+        ctx.lineTo(50 + base * 7.5, 250 - height); // Top corner
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+    // Draw triangle with angles (approximation, for visualization)
+    function drawTriangleWithAngles(angle1, angle2) {
+        const side1 = 100;
+        const radians1 = (angle1 * Math.PI) / 180;
+        const radians2 = (angle2 * Math.PI) / 180;
+        const x2 = 50 + side1 * Math.cos(radians1);
+        const y2 = 250 - side1 * Math.sin(radians1);
+        const x3 = 50 + side1 * Math.cos(radians2);
+        const y3 = 250 - side1 * Math.sin(radians2);
+
+        ctx.beginPath();
+        ctx.moveTo(50, 250); // Bottom left corner
+        ctx.lineTo(x2, y2); // Top corner based on angle1
+        ctx.lineTo(x3, y3); // Top corner based on angle2
+        ctx.closePath();
+        ctx.stroke();
+    }
+
+    // Initialize with a random problem
+    generateRandomProblem();
+
+    // Validate user input
+    function validateAnswer() {
+        const userAnswer = parseFloat(userAnswerEl.value);
+
+        if (userAnswer === currentQuestion.answer) {
+            score++;
+            resultMessage.textContent = `Correct!`;
+            resultMessage.style.color = "green";
+        } else {
+            resultMessage.textContent = `Incorrect! The correct answer was ${currentQuestion.answer}.`;
+            resultMessage.style.color = "red";
+        }
+
+        scoreElement.textContent = score;
+        submitAnswerBtn.classList.add('hidden');
+        tryAgainBtn.classList.remove('hidden');
+
+        if (score === 10) {
+            alert("Congratulations! You've answered 10 questions correctly!");
+            score = 0;
+            scoreElement.textContent = score;
+        }
+    }
+
+    // Reset the game for another round
+    function resetGame() {
+        userAnswerEl.value = "";
+        resultMessage.textContent = "";
+        submitAnswerBtn.classList.remove('hidden');
+        tryAgainBtn.classList.add('hidden');
+        generateRandomProblem();
+    }
+
+    // Event listeners
+    submitAnswerBtn.addEventListener('click', validateAnswer);
+    tryAgainBtn.addEventListener('click', resetGame);
+</script>
+</body>
+</html>
