@@ -27,13 +27,20 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function generateQuestions(rangeMin, rangeMax, quantity) {
-        const questions = [];
-        for (let i = 0; i < quantity; i++) {
+        const questionsSet = new Set();
+        const questionsArray = [];
+
+        while (questionsArray.length < quantity) {
             const num1 = getRandomInt(rangeMin, rangeMax);
             const num2 = getRandomInt(rangeMin, num1);  // Ensure num2 <= num1 to avoid negative results
-            questions.push({ num1, num2, userAnswer: null, isCorrect: false });
+            const questionString = `${num1}-${num2}`; // Unique identifier for the question
+
+            if (!questionsSet.has(questionString)) {
+                questionsSet.add(questionString);
+                questionsArray.push({ num1, num2, userAnswer: null, isCorrect: false });
+            }
         }
-        return questions;
+        return questionsArray;
     }
 
     function getRandomInt(min, max) {
@@ -89,8 +96,6 @@ document.addEventListener('DOMContentLoaded', function() {
         newSubmission.textContent = `${question.num1} - ${question.num2} = ${question.userAnswer} ${correctSymbol}`;
 
         submittedValuesContainer.appendChild(newSubmission);
-
-        // Optionally scroll to the bottom of the container
         submittedValuesContainer.scrollTop = submittedValuesContainer.scrollHeight;
     }
 
